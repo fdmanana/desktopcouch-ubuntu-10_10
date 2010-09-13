@@ -1,0 +1,49 @@
+#!/usr/bin/make -f
+
+# Copyright 2009, Noah Slater <nslater@tumbolia.org>
+
+# Copying and distribution of this file, with or without modification, are
+# permitted in any medium without royalty provided the copyright notice and this
+# notice are preserved.
+
+include /usr/share/cdbs/1/rules/buildcore.mk
+include /usr/share/cdbs/1/rules/debhelper.mk
+include /usr/share/cdbs/1/class/autotools.mk
+include /usr/share/cdbs/1/rules/simple-patchsys.mk
+
+DEB_INSTALL_DOCS_ALL =
+DEB_DH_INSTALLINIT_ARGS = -Ncouchdb-bin --onlyscripts
+
+LIB = ${localstatedir}/lib/\$${package_identifier}
+
+xulrunner_gre_version := $(shell xulrunner --gre-version)
+xulrunner_dep = xulrunner-$(shell echo $(xulrunner_gre_version) | cut -f1-3 -d.)
+DEB_CONFIGURE_EXTRA_FLAGS += --with-js-lib=/usr/lib/xulrunner-devel-$(xulrunner_gre_version)/lib/
+DEB_CONFIGURE_EXTRA_FLAGS += --with-js-include=/usr/lib/xulrunner-devel-$(xulrunner_gre_version)/include/
+
+# @@ workaround for #486848
+binary-arch binary-indep: build
+
+post-patches:: 
+	sed -i s,$(LIB)$$,$(LIB)/$(DEB_UPSTREAM_VERSION), configure
+	sed -i s,VERSION=%VERSION%$$,VERSION=$(DEB_UPSTREAM_VERSION), debian/couchdb.postrm debian/couchdb.postinst
+
+cleanbuilddir:: 
+	sed -i s,$(LIB)/$(DEB_UPSTREAM_VERSION)$$,$(LIB), configure
+	sed -i s,VERSION=$(DEB_UPSTREAM_VERSION)$$,VERSION=%VERSION%, debian/couchdb.postrm debian/couchdb.postinst
+
+common-binary-post-install-arch::
+	rm -r debian/tmp/var/run
+	rm -f debian/couchdb-bin/usr/lib/couchdb/erlang/lib/couch-*/priv/lib/couch_erl_driver.la
+	rm -f debian/couchdb-bin/usr/share/couchdb/www/script/jquery.js
+	dh_link /usr/share/javascript/jquery/jquery.js /usr/share/couchdb/www/script/jquery.js
+	cp debian/binary.lintian-overrides debian/couchdb-bin/usr/share/lintian/overrides/couchdb-bin
+
+common-binary-predeb-arch::
+	echo 'xulrunner:Depends=$(xulrunner_dep)' >> debian/couchdb-bin.substvars
+	erlang-depends -pcouchdb-bin
+
+# @@ only works from source directory, see #494141
+.PHONY: get-orig-source
+get-orig-source:
+	uscan --force-download --rename --download-version=$(DEB_UPSTREAM_VERSION) --destdir .

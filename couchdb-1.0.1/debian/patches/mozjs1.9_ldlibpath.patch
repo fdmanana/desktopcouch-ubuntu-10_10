@@ -1,0 +1,26 @@
+diff -Nur -x '*.orig' -x '*~' couchdb-0.9.0/bin/couchdb.tpl.in couchdb-0.9.0.new/bin/couchdb.tpl.in
+--- couchdb-0.9.0/bin/couchdb.tpl.in	2009-03-24 14:04:46.000000000 +0100
++++ couchdb-0.9.0.new/bin/couchdb.tpl.in	2009-06-10 15:49:59.000000000 +0200
+@@ -35,6 +35,9 @@
+ HEART_COMMAND="%bindir%/%couchdb_command_name% -k"
+ HEART_BEAT_TIMEOUT=11
+ 
++LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/xulrunner-`xulrunner-1.9.2 --gre-version`/
++export LD_LIBRARY_PATH
++
+ basename=`basename $0`
+ 
+ display_version () {
+diff -Nur -x '*.orig' -x '*~' couchdb-0.9.0/bin/couchjs.tpl.in couchdb-0.9.0.new/bin/couchjs.tpl.in
+--- couchdb-0.9.0/bin/couchjs.tpl.in	2008-08-18 11:49:40.000000000 +0200
++++ couchdb-0.9.0.new/bin/couchjs.tpl.in	2009-06-10 15:50:51.000000000 +0200
+@@ -17,6 +17,9 @@
+ 
+ DEFAULT_VERSION=170
+ 
++LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/xulrunner-`xulrunner-1.9.2 --gre-version`/
++export LD_LIBRARY_PATH
++
+ basename=`basename $0`
+ 
+ display_version () {

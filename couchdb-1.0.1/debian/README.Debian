@@ -1,0 +1,26 @@
+Debian README
+=============
+
+Apache CouchDB is alpha software and still under heavy development. Please be
+aware that important areas such as the public API or internal database format
+may see backwards incompatible changes between versions.
+
+More detailed information can be found on the CouchDB wiki:
+
+  http://wiki.apache.org/couchdb/BreakingChanges
+
+Because the internal database format may change, rendering your database
+unusable with a new version of the package, the database directory is
+partitioned by the CouchDB release number of the database format in use.
+
+The partitioned database directories are named like this:
+
+  /var/lib/couchdb/VERSION
+
+Before you upgrade to a new version of this package with a changed database
+format you should export any data that you want keep from the old database and
+import the data into the new database after the upgrade.
+
+Migration tools are available in the `python-couchdb` package.
+
+ -- Sam Bisbee <sbisbee@computervip.com>  Wed, 11 Nov 2009 23:22:21 -0500

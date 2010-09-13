@@ -1,0 +1,53 @@
+Source: couchdb
+Section: misc
+Priority: optional
+Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+XSBC-Original-Maintainer: Erlang Packaging Team <pkg-erlang-devel@lists.alioth.debian.org>
+Uploaders: Sergei Golovan <sgolovan@debian.org>, Sam Bisbee <sbisbee@computervip.com>, Elliot Murphy <elliot@ubuntu.com>
+Standards-Version: 3.9.1
+Build-Depends: cdbs (>= 0.4.42), debhelper (>= 7.2.11),
+ erlang-dev (>= 1:13.b.1-dfsg-3), help2man (>= 1.37), libcurl4-openssl-dev,
+ libicu-dev, libreadline-dev,
+ xulrunner-dev (>= 1.9.2), erlang-crypto, erlang-inets, erlang-xmerl
+Homepage: http://couchdb.apache.org/
+Vcs-Svn: svn+ssh://svn.debian.org/svn/pkg-erlang/couchdb
+Vcs-Browser: http://svn.debian.org/viewsvn/pkg-erlang/couchdb
+
+Package: couchdb-bin
+Depends: ${misc:Depends}, ${shlibs:Depends}, ${erlang-base:Depends},
+ ${erlang-crypto:Depends}, ${erlang-inets:Depends}, ${erlang-xmerl:Depends}, ${erlang-abi:Depends}, adduser, libjs-jquery, lsb-base, procps, mawk,
+ ${xulrunner:Depends}
+Suggests: couchdb
+Architecture: any
+Description: RESTful document oriented database, programs
+ Apache CouchDB is a distributed, fault-tolerant and schema-free
+ document-oriented database accessible via a RESTful HTTP/JSON API. Among other
+ features, it provides robust, incremental replication with bi-directional
+ conflict detection and resolution, and is queryable and indexable using a
+ table-oriented view engine with JavaScript acting as the default view
+ definition language.
+ .
+ This package contains the database program (so one can run personal servers),
+ but no system database or "init" startup files.  To get those, you need the
+ "couchdb" package.
+ .
+ CouchDB is written in Erlang, but can be easily accessed from any environment
+ that provides means to make HTTP requests. There are a multitude of third-party
+ client libraries that make this even easier for a variety of programming
+ languages and environments.
+
+Package: couchdb
+Architecture: all
+Depends: couchdb-bin (>= ${binary:Version}), ${misc:Depends}
+Description: RESTful document oriented database, system DB
+ Apache CouchDB is a distributed, fault-tolerant and schema-free
+ document-oriented database accessible via a RESTful HTTP/JSON API. Among other
+ features, it provides robust, incremental replication with bi-directional
+ conflict detection and resolution, and is queryable and indexable using a
+ table-oriented view engine with JavaScript acting as the default view
+ definition language.
+ .
+ CouchDB is written in Erlang, but can be easily accessed from any environment
+ that provides means to make HTTP requests. There are a multitude of third-party
+ client libraries that make this even easier for a variety of programming
+ languages and environments.

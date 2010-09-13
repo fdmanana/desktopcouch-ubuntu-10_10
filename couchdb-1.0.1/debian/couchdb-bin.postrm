@@ -1,0 +1,18 @@
+#!/bin/sh -e
+
+# Copyright 2009, Noah Slater <nslater@tumbolia.org>
+
+# Copying and distribution of this file, with or without modification, are
+# permitted in any medium without royalty provided the copyright notice and this
+# notice are preserved.
+
+VERSION=%VERSION%
+
+case $1 in
+    purge)
+        if test -d "/etc/couchdb"; then
+            rmdir --ignore-fail-on-non-empty "/etc/couchdb" || true
+        fi
+esac
+
+#DEBHELPER#

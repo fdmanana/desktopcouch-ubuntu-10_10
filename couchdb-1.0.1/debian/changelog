@@ -1,0 +1,477 @@
+couchdb (1.0.1-0ubuntu1) maverick; urgency=low
+
+  * Upstream microrelease to address data loss (LP: #615224)
+    - Fix data corruption bug COUCHDB-844. Please see
+      http://couchdb.apache.org/notice/1.0.1.html for details.
+    - Added support for replication via an HTTP/HTTP proxy.
+    - Fixed various replicator bugs for interop with older
+      CouchDB versions.
+    - Show fields saved along with _deleted=true.
+      Allows for auditing of deletes.
+    - Enable basic-auth popup when required to access the server,
+      to prevent people from getting locked out.
+    - User interface element for querying stale (cached) views.
+  * debian/patches/auth_patch.patch dropped, included upstream.
+  * debian/patches/remove_users.patch dropped, included upstream.
+
+ -- Elliot Murphy <elliot@ubuntu.com>  Mon, 16 Aug 2010 19:45:48 -0400
+
+couchdb (1.0.0-0ubuntu1) maverick; urgency=low
+
+  * New upstream release (LP: #609728)
+  * debian/patches/auth_cache.patch (already forwarded upstream)
+    - fix a loop in the auth cache that stopped people from logging into futon
+  * debian/patches/remove_users.patch (already forwarded upstream)
+    - fix failure to delete couch users
+  * source/format - mark package as 1.0 format
+  * debian/control - bump standards version
+  * debian/control - fix lintian error not-binnmuable-all-depends-any
+
+ -- Elliot Murphy <elliot@ubuntu.com>  Mon, 26 Jul 2010 10:24:11 -0400
+
+couchdb (0.11.0-1ubuntu1) maverick; urgency=low
+
+  * Merge from debian unstable.  Remaining changes: (LP: #591444)
+    - debian/patches/fix-help2man.patch, debian/control: build with help2man
+      >= 1.37; add --no-discard-stderr
+    - debian/patches/init.patch: updated to account for upstream conflicting
+      changes
+    - debian/rules, debian/control: split couchdb and couchdb-bin
+    - debian/control: add missing erlang-{inets,crypto,xmerl}
+      (build-)dependencies
+    - debian/patches/mozjs_ldlibpath.patch, debian/control: change version
+      of xulrunner to xulrunner-1.9.2
+    - debian/control: transition from libmozjs-dev to xulrunner-dev in
+      ubuntu
+    - debian/rules, debian/control: grab the current xulrunner version with
+      "xulrunner --gre-version" to use as a dependency
+    - debian/postinst: renamed to couchdb-bin.postinst, change the default 
+      permissions on /etc/couchdb to 0775 and files to 0664
+    - debian/couchdb-bin.postrm: don't try to delete couchdb system
+      user/group
+  * erlang-depends, pass explicit -pcouchdb-bin
+
+ -- Clint Byrum <clint@ubuntu.com>  Tue, 08 Jun 2010 23:16:21 -0700
+
+couchdb (0.11.0-1) unstable; urgency=medium (security fixes)
+
+  * New upstream release, including security fix for CVE-2010-00009.
+    (closes: #576304, #577417)
+  * Removed debian/patches/icu-patch.patch, as it's no longer needed.
+
+ -- Sam Bisbee <sbisbee@computervip.com>  Fri, 16 Apr 2010 18:04:47 +0400
+
+couchdb (0.10.1-2) unstable; urgency=low
+
+  [ Elliot Murphy ]
+  * Updated debian/control, added Elliot to Uploaders
+  * Dropped $ENABLE_SERVER portion of debian/patches/init.patch
+
+  [ Sam Bisbee ]
+  * Updated debian/patches/init.patch, adding a grace period to the init
+    script's stop task to allow couchdb's child processes (ie., heart) a chance
+    to exit before deciding whether the task was successful or not. This adds a
+    dependency on procps (`ps` command).
+  * Removed debian/preinst, undoing killall preinst patch from 0.10.0-1 that is
+    no longer needed due to the grace period init patch in this release. This 
+    also removes the dependency on psmisc. (closes: #562901) 
+  * Updated debian/control, bumping Debian standards version to 3.8.4.
+  * Updated debian/control, adding mawk as a dependency. The majority of
+    systems will have it installed with the base system, but it's required and
+    not essential. (closes: #569965)
+
+ -- Sam Bisbee <sbisbee@computervip.com>  Tue, 09 Mar 2010 21:55:59 +0300
+
+couchdb (0.10.1-1) unstable; urgency=low
+
+  * New upstream release (closes: #550782). 
+  * Cleaning up nmu related lintian warnings. 
+
+ -- Sam Bisbee <sbisbee@computervip.com>  Wed, 23 Dec 2009 23:15:27 -0500
+
+couchdb (0.10.0-1ubuntu2) lucid; urgency=low
+
+  * debian/patches/fix-help2man.patch, debian/control: build with help2man 1.37;
+    add --no-discard-stderr for 1.37 help2man version (LP: #536740)
+  * debian/patches/mozjs_ldlibpath.patch, debian/control: change version of 
+    xulrunner to xulrunner-1.9.2 (LP: #536737)
+
+ -- Micah Gersten <micahg@ubuntu.com>  Tue, 09 Mar 2010 12:27:55 -0600
+
+couchdb (0.10.0-1ubuntu1) lucid; urgency=low
+
+  * Merge from Debian testing, remaining changes:
+    - split package into couchdb and couchdb-bin binary packages, so that
+      the programs can be installed without starting the system service
+    - debian/control: add missing erlang-{inets,crypto,xmerl}
+      (build-)dependencies
+    - debian/control: transition from libmozjs-dev to xulrunner-dev in
+      ubuntu
+    - debian/rules, debian/control: grab the current xulrunner version with
+      "xulrunner --gre-version" to use as a dependency
+    - debian/patches/mozjs_ldlibpath.patch: explicitly set LD_LIBRARY_PATH to
+      pkglibdir of current installed xulrunner version on startup; this works
+      around the fact that couchdb relies on the not publicly exported
+      libmozjs
+    - debian/postinst: change the default permissions on /etc/couchdb to
+      0775, and /etc/couchdb/default.ini and /etc/couchdb/local.ini to 0774
+    - debian/patches/http-redirect-query-string-fix.patch: fix replication
+      over OAuth, which was broken because of incorrect query-string handling
+      after HTTP redirection
+    - debian/couchdb-bin.postrm: don't try to delete couchdb system
+      user/group
+    - debian/rules, debian/couchdb.{postinst,postrm}: create
+      /var/{log,lib}/couchdb/${couchdbversion}, so couchdb will run.
+  * Dropped changes, superseded in Debian:
+    - debian/control: bump the Standards-Version to 3.8.2 (latest)
+    - debian/copyright: added src/etap/* to copyright file
+  * debian/rules: don't munge debian/couchdb-bin.postrm, it doesn't contain
+    the VERSION tag anymore
+  * Fix permissions on files in /etc/couchdb to be 0664, not 0774 - config
+    files should not be executable!
+  * Remove the debian/preinst, and drop the build-dependency on psmisc which
+    doesn't do the right thing /anyway/.  A preinst invocation implies a
+    Pre-Depends, not a Build-Depends, and the heuristic being used here with
+    'killall' is useless.
+  * Don't recursively chmod /var/lib/couchdb, only chmod the directories -
+    we don't want the files to wind up executable.
+  * debian/rules: fix dh_installinit invocation to only add scripts for the
+    couchdb package, not couchdb-bin.
+
+ -- Steve Langasek <steve.langasek@ubuntu.com>  Tue, 29 Dec 2009 13:24:28 -0800
+
+couchdb (0.10.0-1) unstable; urgency=low
+
+  [ Elliot Murphy ]
+  * Updated debian/copyright, added src/etap*
+  * Updated debian/control, changed Maintainer to Erlang team address
+  * Updated debian/control, changed Vcs- links to new locations.
+
+  [ Sergei Golovan ]
+  * New upstream release (closes: #551212, #554080, #554593).
+  * Removed unnecessary build dependency on transitional erlang-nox package.
+  * Replaced subst variables in dependencies by ${erlang:Depends} which allows
+    to calculate dependencies automatically. This removes erlang-nox from
+    dependencies (closes: #532756).
+  * Bumped standards version to 3.8.3.
+  * It's normal if /etc/init.d script is left after package removal as a
+    config file (and the binary isn't available). Therefore made it return
+    success in case if /usr/bin/couchdb doesn't exist or isn't an executable.
+  * Change current directory to /var/run/couchdb in init script to prevent
+    error messages about access violation by code server if the current dir
+    isn't readable by the couchdb user.
+  * Put log files directly into /var/log/couchdb directory. There's no reason
+    to have different log subdirectories for different couchdb versions.
+
+  [ Noah Slater ]
+  * Updated debian/control, updated Build-Depends on debhelper to 7.2.11.
+
+  [ Sam Bisbee ]
+  * Updated debian/control, repointed Vcs links.
+  * Fix "replacing libreadline5-dev build dependency with libreadline-
+    dev" Updated debian/control, changed libreadline5-dev dependency to
+    libreadline-dev. (Closes: #553742)
+  * Updated debian/README.Debian, removed log directory partitioning info
+    per Sergei's related changes to put all logs in one directory.
+  * Updated debian/postrm, rmdir didn't like that its target directories
+    weren't non-empty (despite passed args), causing errors and failing to
+    remove directories. Also removed the version partitioning cases.
+  * Created debian/preinst, now we make sure that couchdb isn't running any
+    beam processes on upgrade. Upgrading from 0.9.0-2 was leaving old code in a
+    running beam process, so you were running 0.9.0 couchdb but had 0.10.0 code
+    installed until you killed the process. Adds a dependency on psmisc.
+
+ -- Sam Bisbee <sbisbee@computervip.com>  Sat, 21 Nov 2009 17:10:39 -0500
+
+couchdb (0.10.0-0ubuntu3) karmic; urgency=low
+
+  * Fix replication over OAuth, which was broken because of incorrect
+    query-string handling after HTTP redirection. (LP: #456234)
+  * create /var/log/couchdb/${couchdbversion} also, as couchdb does not
+    create it.  (LP: #453049)
+
+ -- Chad Miller <chad.miller@canonical.com>  Tue, 20 Oct 2009 16:30:45 -0400
+
+couchdb (0.10.0-0ubuntu2) karmic; urgency=low
+
+  * create /var/log/couchdb so that couchdb installs/runs  (LP: #453049)
+
+ -- Chad Miller <chad.miller@canonical.com>  Mon, 19 Oct 2009 09:37:43 -0400
+
+couchdb (0.10.0-0ubuntu1) karmic; urgency=low
+
+  * Final 0.10.0 upstream release. (LP: #450442)
+    - CouchDB 0.10.0 is now a beta version, not alpha.
+    - Fixes replication with 0.9 servers.
+    - Fix UUID's tests.
+    - Includes ETap into the test suite.
+    - Fix UUID's ETags.
+    - Fix cookie and oauth+replication.
+    - OAuth support for https URL scheme.
+    - Reject invalid UTF-8.
+  * debian/patches
+    - dropped oauth-replication-crash-fix-backport.patch
+  * debian/copyright
+    - added src/etap/* to copyright file.
+
+ -- Elliot Murphy <elliot@ubuntu.com>  Tue, 13 Oct 2009 16:50:35 -0400
+
+couchdb (0.10.0~svn818859-0ubuntu3) karmic; urgency=low
+
+  * Finish split of couchdb-bin and couchdb by renaming substvar file
+    for xulrunner dependency. (LP: #449653)
+
+ -- Chad Miller <chad.miller@canonical.com>  Mon, 12 Oct 2009 12:11:29 -0400
+
+couchdb (0.10.0~svn818859-0ubuntu2) karmic; urgency=low
+
+  * Backport future patches that fixes replication crash for authenticated
+    connections from other couchdb instances.  (LP: #439499)
+  * Remove explicit version from debian/couchdb-bin/postinst .
+
+ -- Chad Miller <chad@ubuntu.com>  Thu, 01 Oct 2009 09:56:37 -0400
+
+couchdb (0.10.0~svn818859-0ubuntu1) karmic; urgency=low
+
+  * Import code from pre-release branch.  (LP: #427860, #408909)
+   	+ Build and System Integration:
+   	  * Changed `couchdb` script configuration options.
+  	  * Added default.d and local.d configuration directories to load
+        sequence.
+   	+ HTTP Interface:
+   	  * Added optional cookie-based authentication handler.
+   	  * Added optional two-legged OAuth authentication handler.
+  * Packaging of couchdb-bin must replace pre-split couchdb.
+    (LP: #432219)
+  * Move all of /etc and /var out of the couchdb-bin package, to the
+    couchdb package. 
+  * /etc/couchdb must be in couchdb-bin, as config files are needed
+    by all servers.
+    + So the couchdb user must be managed by couchdb-bin.
+    + Split postinst/postrm files to manage different files.
+    + Set Replaces of couchdb-bin by couchdb so that config files
+      migrate.
+  * Update the version number in postrm.  (!)
+  * Use the new "Breaks" field in control file to help split pkg.
+
+  [Ken VanDine]
+  * debian/couchdb.install:
+    - removed /var
+  * debian/rules:
+    - removed bootstrap 
+  * debian/couchdb.postinst:
+    - Added the debhelper tag
+
+ -- Chad Miller <chad@ubuntu.com>  Fri, 25 Sep 2009 19:18:26 -0400
+
+couchdb (0.10.0~svn813472-0ubuntu2) karmic; urgency=low
+
+  * Split couchdb into couchdb (to hold only the init) and couchdb-bin 
+    (to hold everything else). (LP: #427036)
+
+ -- Chad Miller <chad@ubuntu.com>  Wed, 16 Sep 2009 14:12:56 -0400
+
+couchdb (0.10.0~svn813472-0ubuntu1) karmic; urgency=low
+
+  * New snapshot of couchdb 0.10.x stable prerelease branch
+    - pass config reset option to recursed background startup (LP: #424330)
+      closes COUCHDB-498
+    - Fix for building on snow leopard COUCHDB-490
+    - Fix SSL replication (LP: #422178) COUCHDB-491
+    - Fix continuous-after-normal replication
+    - Use the same password hash calculation for user creation via ini
+      file and user db, closes COUCHDB-492
+    - Fix for WebKit XHR, closes COUCHDB-483
+    - Don't check for response code text, closes COUCHDB-482
+    - Remove a debugging leftover
+
+ -- Elliot Murphy <elliot@ubuntu.com>  Thu, 10 Sep 2009 11:35:54 -0400
+
+couchdb (0.10.0~svn809550-0ubuntu1) karmic; urgency=low
+
+  * New snapshot of couchdb 0.10.x stable prerelease branch (LP: #421971)
+    - fixes a process leak in local changes feed consumer
+    - disables internal gen_server timeouts
+    - minimize the number of full commits
+    - follow 302 redirects during replication
+    - more precise and accurate calculation of replication progress
+    - added crypto export notice to README
+    - Fix for problem where HEAD requests that would have a chunked responses
+      would send the chunked response anyway.
+    - send deleted docs to changes filters and protect against missing
+      filters.
+    - merge cascading auth patch by Jason Davies, closes COUCHDB-478
+  * Drop debian/patches/oauth_ini_users.patch as it has been merged upstream.
+  * debian/postrm
+    - don't try to delete couchdb system user/group (LP: #387945)
+
+ -- Elliot Murphy <elliot@ubuntu.com>  Mon, 31 Aug 2009 09:06:26 -0400
+
+couchdb (0.10.0~svn806985-0ubuntu2) karmic; urgency=low
+
+  * Pick up the xulrunner dep from xulrunner --gre-version instead of
+    hard-coding it in debian/control; this gets us onto xulrunner-1.9.1,
+    which we're already building against, instead of xulrunner-1.9.
+
+ -- Steve Langasek <steve.langasek@ubuntu.com>  Fri, 28 Aug 2009 23:21:39 +0000
+
+couchdb (0.10.0~svn806985-0ubuntu1) karmic; urgency=low
+
+  * First snapshot of couchdb 0.10pre, from
+    http://build.couchdb.org/0.10.x-UNOFFICIAL (LP: #418288)
+  * debian/postinst
+    - Make /etc/couchdb/local.ini world readable (LP: #403575)
+
+  [Elliot Murphy]
+  * Added debian/patches/oauth_ini_users.patch from
+    http://issues.apache.org/jira/browse/COUCHDB-478
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Mon, 24 Aug 2009 15:44:14 -0400
+
+couchdb (0.9.0-2ubuntu5) karmic; urgency=low
+
+  * Fixes LP: #389089 - couchdb fails to start: looking for absent 'xulrunner'
+    - Use version-specific xulrunner binary in couchdb wrapper script.
+
+ -- Elliot Murphy <elliot@ubuntu.com>  Wed, 05 Aug 2009 11:27:30 +0100
+
+couchdb (0.9.0-2ubuntu4) karmic; urgency=low
+
+  * debian/postinst
+    - Change the default permissions on /etc/couchdb to 0775, 
+      /etc/couchdb/default.ini to 0774 and /etc/couchdb/local.ini 
+      to 0770 (LP: #403575) 
+  * debian/control
+    - Bump the Standards-Version to 3.8.2 (latest)
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Thu, 23 Jul 2009 13:35:12 -0400
+
+couchdb (0.9.0-2ubuntu3) karmic; urgency=low
+
+  * Add missing erlang-{crypto,xmerl} dependencies, thanks James Henstridge!
+    (LP: #385104)
+
+ -- Martin Pitt <martin.pitt@ubuntu.com>  Fri, 12 Jun 2009 18:06:25 +0200
+
+couchdb (0.9.0-2ubuntu2) karmic; urgency=low
+
+  * Change erlang-nox dependency to erlang-inets. (LP: #385104)
+
+ -- James Henstridge <james@jamesh.id.au>  Tue, 02 Jun 2009 17:17:40 +0800
+
+couchdb (0.9.0-2ubuntu1) karmic; urgency=low
+
+  De-libmoz-dev'ification (LP: #352968)
+  * debian/control: transition from libmozjs-dev to xulrunner-dev in ubuntu
+  * debian/control: add xulrunner-1.9 as explicit dependency for couchdb package
+  * debian/patches/mozjs_ldlibpath.patch: explicitly set LD_LIBRARY_PATH to
+    pkglibdir of current installed xulrunner version on startup; this works around
+    the fact that couchdb relies on the not publicly exported libmozjs
+
+ -- Alexander Sack <asac@ubuntu.com>  Wed, 10 Jun 2009 15:39:54 +0200
+
+couchdb (0.9.0-2) unstable; urgency=low
+
+  * Updated debian/dirs, removed /var/run/couchdb directory per policy.
+  * Updated debian/patches/pid.patch, create /var/run/couchdb dynamically.
+  * Updated debian/postrm, added VERSION variable.
+  * Updated debian/postrm, added missing removal of log directories.
+  * Updated debian/postrm, fixed missing function error.
+  * Updated debian/rules, added patch for debian/postrm to update VERSION.
+  * Updated debian/rules, fixed bug with configure patch.
+  * Updated debian/control, added build-dependency on erlang-dev >= 1:13.b
+    to make transition to Erlang R13B easier.
+
+ -- Noah Slater <nslater@tumbolia.org>  Mon, 11 May 2009 11:26:55 +0400
+
+couchdb (0.9.0-1) unstable; urgency=low
+
+  * New upstream release. Closes: #522051
+  * Added debian/patches/pid.patch, corrects daemon pidfile handling.
+  * Updated debian/control, added Build-Depends on libcurl4-openssl-dev.
+  * Updated debian/control, changed Homepage and Description.
+  * Updated debian/control, changed Standards-Version to 3.8.0.
+  * Updated debian/copyright, changed maintainer email address.
+  * Updated debian/postinst, changed owner of /etc/couchdb directory.
+  * Updated debian/postrm, changed so only empty data directories are removed.
+  * Updated debian/rules, improved uscan options for get-orig-source.
+
+ -- Noah Slater <nslater@tumbolia.org>  Tue, 14 Apr 2009 16:32:45 +0100
+
+couchdb (0.8.1-1) experimental; urgency=low
+
+  * New upstream release.
+  * Updated debian/control, added Depends on libjs-jquery.
+  * Updated debian/control, removed Depends on mime-support.
+  * Updated debian/rules, added standard uscan options for get-orig-source.
+  * Removed debian/patches/directory-version.patch, replaces manual sed invocation.
+
+ -- Noah Slater <nslater@tumbolia.org>  Mon, 18 Aug 2008 15:10:07 +0100
+
+couchdb (0.8.0-2) unstable; urgency=low
+
+  * Added debian/README.source, contains upstream source information.
+  * Updated debian/README.Debian, added note about python-couchdb.
+  * Updated debian/control, changed Standards-Version to 3.8.0.
+  * Updated debian/copyright, changed for latest proposed format.
+  * Updated debian/rules, changed binary-arch and binary-indep targets
+    to depend on the build target as a workaround for #486848.
+  * Updated debian/watch, updated version number.
+
+ -- Noah Slater <nslater@tumbolia.org>  Fri, 11 Jul 2008 11:29:17 +0100
+
+couchdb (0.8.0-1) unstable; urgency=low
+
+  * New upstream release.
+  * Added debian/watch, upstream information for uscan.
+  * Updated debian/copyright, changed to use Apache Licence from common-licenses.
+  * Updated debian/rules, changed get-orig-source to work with uscan.
+
+ -- Noah Slater <nslater@tumbolia.org>  Wed, 25 Jun 2008 20:19:40 +0100
+
+couchdb (0.7.3~svn650270-2) unstable; urgency=low
+
+  * Updated debian/rules, added release partitioning to data directories.
+  * Updated debian/postrm, changed so that log files are not removed.
+
+ -- Noah Slater <nslater@tumbolia.org>  Sat, 24 May 2008 16:30:21 +0100
+
+couchdb (0.7.3~svn650270-1) experimental; urgency=low
+
+  * New upstream snapshot, database format change, no boot file, no
+    SpiderMonkey and all tests pass. Closes: #465592, #465722, #466424
+  * Updated debian/control, removed Debian revision from erlang-dev Build-Depends.
+  * Updated debian/control, removed Depends on libicu-dev. Closes: #466076
+  * Updated debian/copyright, changed for latest proposed format.
+
+ -- Noah Slater <nslater@tumbolia.org>  Thu, 01 May 2008 12:07:31 +0100
+
+couchdb (0.7.3~svn684-1) unstable; urgency=low
+
+  * New upstream snapshot.
+  * Updated debian/control, changed Standards-Version to 3.7.3.
+
+ -- Noah Slater <nslater@tumbolia.org>  Wed, 06 Feb 2008 17:03:38 +0000
+
+couchdb (0.7.2-2) experimental; urgency=low
+
+  * Updated debian/control, added Build-Depends on libicu-dev as an
+    alternative to libicu36-dev which is removed from unstable.
+
+ -- Sergei Golovan <sgolovan@debian.org>  Wed, 19 Dec 2007 17:54:47 +0300
+
+couchdb (0.7.2-1) experimental; urgency=low
+
+  * New upstream release.
+  * Updated debian/rules, changed to pass -fPIC to compiler. Closes: #451996
+  * Updated debian/rules, changed to force removal of unwanted files.
+  * Updated debian/rules, added a get-orig-source target.
+
+ -- Noah Slater <nslater@tumbolia.org>  Sat, 08 Dec 2007 01:21:01 +0300
+
+couchdb (0.7.0-1) experimental; urgency=low
+
+  * Initial release. Closes: #445880
+
+ -- Noah Slater <nslater@tumbolia.org>  Sat,  6 Oct 2007 19:44:36 +0100
+

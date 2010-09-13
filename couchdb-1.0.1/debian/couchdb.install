@@ -1,0 +1,3 @@
+debian/tmp/etc/default
+debian/tmp/etc/init.d
+debian/tmp/etc/logrotate.d

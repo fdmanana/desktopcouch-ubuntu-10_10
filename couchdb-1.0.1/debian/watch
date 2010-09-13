@@ -1,0 +1,3 @@
+version=3
+
+http://www.apache.org/dist/couchdb/([\d\.]+)/apache-couchdb-([\d\.]+)\.tar\.gz

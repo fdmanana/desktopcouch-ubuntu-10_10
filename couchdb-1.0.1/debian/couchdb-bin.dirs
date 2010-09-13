@@ -1,0 +1,3 @@
+etc/couchdb/default.d
+etc/couchdb/local.d
+usr/share/lintian/overrides

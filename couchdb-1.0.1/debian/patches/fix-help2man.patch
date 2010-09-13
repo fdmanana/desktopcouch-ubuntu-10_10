@@ -1,0 +1,13 @@
+# Version 1.37 of help2man requires --no-discard-stderr
+--- couchdb-0.10.0.orig/bin/Makefile.in
++++ couchdb-0.10.0/bin/Makefile.in
+@@ -211,7 +211,7 @@
+ CLEANFILES = $(bin_SCRIPTS) $(dist_man1_MANS) $(noinst_SCRIPTS)
+ couchdb_command_name = `echo couchdb | sed '$(transform)'`
+ couchjs_command_name = `echo couchjs | sed '$(transform)'`
+-HELP2MAN_OPTION = --no-info --help-option="-h" --version-option="-V"
++HELP2MAN_OPTION = --no-info --no-discard-stderr --help-option="-h" --version-option="-V"
+ all: all-am
+ 
+ .SUFFIXES:
+
