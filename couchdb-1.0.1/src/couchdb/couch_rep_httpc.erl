@@ -260,7 +260,7 @@ ssl_options(#http_db{url = Url}) ->
             ssl_verify_options(false)
         end,
         [{is_ssl, true}, {ssl_options, Opts}];
-    http ->
+    #url{protocol = http} ->
         []
     end.
 
