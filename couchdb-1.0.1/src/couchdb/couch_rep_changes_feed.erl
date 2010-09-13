@@ -83,7 +83,8 @@ init([_Parent, #http_db{}=Source, Since, PostProps] = Args) ->
         resource = "_changes",
         qs = QS,
         conn = Pid,
-        options = [{stream_to, {self(), once}}, {response_format, binary}],
+        options = [{stream_to, {self(), once}}] ++
+                lists:keydelete(inactivity_timeout, 1, Source#http_db.options),
         headers = Source#http_db.headers -- [{"Accept-Encoding", "gzip"}]
     },
     {ibrowse_req_id, ReqId} = couch_rep_httpc:request(Req),
