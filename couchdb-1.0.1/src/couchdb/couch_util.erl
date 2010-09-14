@@ -461,6 +461,8 @@ url_strip_password(Url) ->
         "http\\1://\\2:*****@\\3",
         [{return, list}]).
 
+encode_doc_id(Id) when is_list(Id) ->
+    encode_doc_id(?l2b(Id));
 encode_doc_id(<<"_design/", Rest/binary>>) ->
     "_design/" ++ url_encode(Rest);
 encode_doc_id(<<"_local/", Rest/binary>>) ->
