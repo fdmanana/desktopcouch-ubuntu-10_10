@@ -1047,7 +1047,8 @@ is_connection_closing(_, _)                -> false.
 parse_11_response(DataRecvd,
                   #state{transfer_encoding = chunked, 
                          chunk_size = chunk_start,
-                         chunk_size_buffer = Chunk_sz_buf
+                         chunk_size_buffer = Chunk_sz_buf,
+                         socket = Socket
                         } = State) ->
     case scan_crlf(Chunk_sz_buf, DataRecvd) of
         {yes, ChunkHeader, Data_1} ->
@@ -1066,7 +1067,22 @@ parse_11_response(DataRecvd,
                                                   recvd_chunk_size = 0,
                                                   chunk_size = ChunkSize});
         {no, Data_1} ->
-            State#state{chunk_size_buffer = Data_1}
+            do_setopts(Socket, [{active, once}], State),
+            Timeout = get_inac_timeout(State),
+            receive
+            {Type, Socket, <<>>} when Type =:= tcp ; Type =:= ssl ->
+                State#state{chunk_size_buffer = Data_1};
+            {Type, Socket, Data_2} when Type =:= tcp ; Type =:= ssl ->
+                parse_11_response(<<Data_1/binary, Data_2/binary>>, State);
+            {Type, Socket} = Msg
+                when Type =:= tcp_closed ; Type =:= tcp_error ;
+                    Type =:= ssl_closed ; Type =:= ssl_error ->
+                self() ! Msg,
+                State#state{chunk_size_buffer = Data_1}
+            after Timeout ->
+                self() ! timeout,
+                State#state{chunk_size_buffer = Data_1}
+            end
     end;
 
 %% This clause is to remove the CRLF between two chunks
@@ -1120,21 +1136,21 @@ parse_11_response(DataRecvd,
     do_trace("Recvd more data: size: ~p. NeedBytes: ~p~n", [DataLen, NeedBytes]),
     case DataLen >= NeedBytes of
         true ->
-            {RemChunk, RemData} = split_binary(DataRecvd, NeedBytes),
-            do_trace("Recvd another chunk...~n", []),
-            do_trace("RemData -> ~p~n", [RemData]),
-            case accumulate_response(RemChunk, State) of
-                {error, Reason} ->
-                    do_trace("Error accumulating response --> ~p~n", [Reason]),
-                    {error, Reason};
-                #state{} = State_1 ->
-                    State_2 = State_1#state{chunk_size=tbd},
-                    parse_11_response(RemData, State_2)
-            end;
+            process_chunk(NeedBytes, DataRecvd, State);
         false ->
-            accumulate_response(DataRecvd,
-                                State#state{rep_buf_size = RepBufSz + DataLen,
-                                            recvd_chunk_size = Recvd_csz + DataLen})
+            RestData = get_chunk_loop(NeedBytes, <<>>, State),
+            DataRecvd2 = <<DataRecvd/binary, RestData/binary>>,
+            do_trace("Second recvd more data: size: ~p~n", [size(DataRecvd2)]),
+            case size(RestData) >= NeedBytes of
+            true ->
+                process_chunk(NeedBytes, DataRecvd2, State);
+            false ->
+                State2 = State#state{
+                    rep_buf_size = RepBufSz + size(DataRecvd2),
+                    recvd_chunk_size = Recvd_csz + size(DataRecvd2)
+                },
+                accumulate_response(DataRecvd2, State2)
+            end
     end;
 
 %% This clause to extract the body when Content-Length is specified
@@ -1448,6 +1464,37 @@ parse_chunk_header(<<H, T/binary>>, Acc) ->
     end;
 parse_chunk_header(<<>>, Acc) ->
     hexlist_to_integer(lists:reverse(Acc)).
+
+process_chunk(NeedBytes, DataRecvd, State) ->
+    {RemChunk, RemData} = split_binary(DataRecvd, NeedBytes),
+    do_trace("Recvd another chunk...~n", []),
+    do_trace("RemData -> ~p~n", [RemData]),
+    case accumulate_response(RemChunk, State) of
+        {error, Reason} ->
+            do_trace("Error accumulating response --> ~p~n", [Reason]),
+            {error, Reason};
+        #state{} = State_1 ->
+            State_2 = State_1#state{chunk_size=tbd},
+            parse_11_response(RemData, State_2)
+    end.
+
+get_chunk_loop(NeedBytes, Acc, _State) when size(Acc) >= NeedBytes ->
+    Acc;
+get_chunk_loop(NeedBytes, Acc, #state{socket = Socket} = State) ->
+    do_setopts(Socket, [{active, once}], State),
+    Timeout = get_inac_timeout(State),
+    receive
+    {Type, Socket, Data} when Type =:= tcp ; Type =:= ssl ->
+        get_chunk_loop(NeedBytes, <<Acc/binary, Data/binary>>, State);
+    {Type, Socket} = Msg
+        when Type =:= tcp_closed ; Type =:= tcp_error ;
+            Type =:= ssl_closed ; Type =:= ssl_error ->
+        self() ! Msg,
+        Acc
+    after Timeout ->
+        self() ! timeout,
+        Acc
+    end.
 
 is_whitespace($\s)  -> true;
 is_whitespace($\r) -> true;
