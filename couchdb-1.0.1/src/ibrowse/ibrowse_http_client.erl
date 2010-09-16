@@ -437,7 +437,7 @@ do_connect(Host, Port, Options, #state{is_ssl      = true,
     Caller_socket_options = get_value(socket_options, Options, []),
     Other_sock_options = filter_sock_options(SSLOptions ++ Caller_socket_options),
     ssl:connect(Host, Port,
-                [binary, {nodelay, true}, {active, false} | Other_sock_options],
+                [{ssl_imp, new}, binary, {nodelay, true}, {active, false} | Other_sock_options],
                 Timeout);
 do_connect(Host, Port, Options, _State, Timeout) ->
     Caller_socket_options = get_value(socket_options, Options, []),
@@ -1009,7 +1009,7 @@ upgrade_to_ssl(#state{socket = Socket,
                       connect_timeout = Conn_timeout,
                       ssl_options = Ssl_options,
                       tunnel_setup_queue = Q} = State) ->
-    case ssl:connect(Socket, Ssl_options, Conn_timeout) of
+    case ssl:connect(Socket, [{ssl_imp, new} | Ssl_options], Conn_timeout) of
         {ok, Ssl_socket} ->
             do_trace("Upgraded to SSL socket!!~n", []),
             State_1 = State#state{socket = Ssl_socket,
