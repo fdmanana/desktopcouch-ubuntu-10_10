@@ -259,7 +259,7 @@ ssl_options(#http_db{url = Url}) ->
         _ ->
             ssl_verify_options(false)
         end,
-        [{is_ssl, true}, {ssl_options, Opts}];
+        [{is_ssl, true}, {ssl_options, ssl_impl_options() ++ Opts}];
     #url{protocol = http} ->
         []
     end.
@@ -272,6 +272,15 @@ start_ssl(OTPVersion) when OTPVersion < "R14A" ->
 start_ssl(_OTPVersion) ->
     application:start(public_key),
     application:start(ssl).
+
+ssl_impl_options() ->
+    OTPVersion = erlang:system_info(otp_release),
+    case (OTPVersion > "R13B") andalso (OTPVersion < "R14A") of
+    false ->
+        [];
+    true ->
+        [{ssl_imp, new}]
+    end.
 
 ssl_verify_options(Value) ->
     ssl_verify_options(Value, erlang:system_info(otp_release)).
