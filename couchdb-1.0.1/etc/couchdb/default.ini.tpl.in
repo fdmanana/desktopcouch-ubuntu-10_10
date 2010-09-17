@@ -126,5 +126,5 @@ max_http_pipeline_size = 10
 verify_ssl_certificates = true
 ; file containing a list of peer trusted certificates
 ssl_trusted_certificates = /etc/ssl/certs/ca-certificates.crt
-; maximum peer certificate validation depth
-ssl_certificate_max_depth = 2
+; maximum peer certificate depth (must be set even if certificate validation is off)
+ssl_certificate_max_depth = 3

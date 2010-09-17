@@ -249,17 +249,18 @@ ssl_options(#http_db{url = Url}) ->
     case ibrowse_lib:parse_url(Url) of
     #url{protocol = https} ->
         start_ssl(),
-        Opts = case couch_config:get("replicator", "verify_ssl_certificates") of
+        Depth = list_to_integer(
+            couch_config:get("replicator", "ssl_certificate_max_depth", "3")),
+        SslOptions = [{depth, Depth}] ++
+        case couch_config:get("replicator", "verify_ssl_certificates") of
         "true" ->
             CAFile = couch_config:get("replicator", "ssl_trusted_certificates"),
-            Depth = list_to_integer(
-                couch_config:get("replicator", "ssl_certificate_max_depth", "2")
-            ),
-            [{cacertfile, CAFile}, {depth, Depth} | ssl_verify_options(true)];
+            [{cacertfile, CAFile}, {verify, verify_peer}];
         _ ->
-            ssl_verify_options(false)
+            [{verify, verify_none}]
         end,
-        [{is_ssl, true}, {ssl_options, ssl_impl_options() ++ Opts}];
+        % new SSL implementation more efficient (available since OTP R12)
+        [{is_ssl, true}, {ssl_options, [{ssl_imp, new} | SslOptions]}];
     #url{protocol = http} ->
         []
     end.
@@ -270,26 +271,6 @@ start_ssl() ->
 start_ssl(OTPVersion) when OTPVersion < "R14A" ->
     application:start(ssl);
 start_ssl(_OTPVersion) ->
+    application:start(crypto),
     application:start(public_key),
     application:start(ssl).
-
-ssl_impl_options() ->
-    OTPVersion = erlang:system_info(otp_release),
-    case (OTPVersion > "R13B") andalso (OTPVersion < "R14A") of
-    false ->
-        [];
-    true ->
-        [{ssl_imp, new}]
-    end.
-
-ssl_verify_options(Value) ->
-    ssl_verify_options(Value, erlang:system_info(otp_release)).
-
-ssl_verify_options(true, OTPVersion) when OTPVersion < "R14A"->
-    [{verify, 2}];
-ssl_verify_options(false, OTPVersion) when OTPVersion < "R14A"->
-    [{verify, 0}];
-ssl_verify_options(true, _OTPVersion) ->
-    [{verify, verify_peer}, {fail_if_no_peer_cert, true}];
-ssl_verify_options(false, _OTPVersion) ->
-    [{verify, verify_none}, {fail_if_no_peer_cert, false}].
