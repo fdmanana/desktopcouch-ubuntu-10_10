@@ -250,17 +250,16 @@ ssl_options(#http_db{url = Url}) ->
     #url{protocol = https} ->
         start_ssl(),
         Depth = list_to_integer(
-            couch_config:get("replicator", "ssl_certificate_max_depth", "3")),
-        SslOptions = [{depth, Depth}] ++
+            couch_config:get("replicator", "ssl_certificate_max_depth", "3")
+        ),
+        SslOpts = [ {depth, Depth} |
         case couch_config:get("replicator", "verify_ssl_certificates") of
         "true" ->
-            CAFile = couch_config:get("replicator", "ssl_trusted_certificates"),
-            [{cacertfile, CAFile}, {verify, verify_peer}];
+            ssl_verify_options(true);
         _ ->
-            [{verify, verify_none}]
-        end,
-        % new SSL implementation more efficient (available since OTP R12)
-        [{is_ssl, true}, {ssl_options, [{ssl_imp, new} | SslOptions]}];
+            ssl_verify_options(false)
+        end ],
+        [{is_ssl, true}, {ssl_options, SslOpts}];
     #url{protocol = http} ->
         []
     end.
@@ -274,3 +273,17 @@ start_ssl(_OTPVersion) ->
     application:start(crypto),
     application:start(public_key),
     application:start(ssl).
+
+ssl_verify_options(Value) ->
+    ssl_verify_options(Value, erlang:system_info(otp_release)).
+
+ssl_verify_options(true, OTPVersion) when OTPVersion < "R14A"->
+    CAFile = couch_config:get("replicator", "ssl_trusted_certificates_file"),
+    [{verify, 2}, {cacertfile, CAFile}];
+ssl_verify_options(false, OTPVersion) when OTPVersion < "R14A"->
+    [{verify, 0}];
+ssl_verify_options(true, _OTPVersion) ->
+    CAFile = couch_config:get("replicator", "ssl_trusted_certificates_file"),
+    [{verify, verify_peer}, {cacertfile, CAFile}];
+ssl_verify_options(false, _OTPVersion) ->
+    [{verify, verify_none}].
